@@ -1,9 +1,12 @@
+from typing import Tuple, Dict, Any, Union
+
 import requests
 import pandas as pd
 import os
 from IPython.display import HTML, display
 import time
 
+from pandas import DataFrame
 
 coalitions = {
     "52": ["2022-07-18", "2023-03-14"],
@@ -78,21 +81,28 @@ def get_vote_json(vote_id: str):
     return get_payload(url, verbose=False)
 
 
-def get_voter_dict(vote_json: dict) -> dict:
+def get_voter_dict(vote_json: dict) -> Tuple[Dict[Any, Any], Dict[str, Union[str, Any]]]:
     voters = vote_json["voters"]
-    # voteUuid = vote_json["uuid"]
     voters_votes = {}
     for voter in voters:
         name = voter["fullName"]
         decision_code = voter["decision"]["code"]
         # faction = voter["faction"]["name"]
         voters_votes[name] = decision_code
-    return voters_votes
+
+    vote_metadata = {
+        "description": vote_json["description"],
+        "draftLink": f"https://www.riigikogu.ee/tegevus/eelnoud/eelnou/{vote_json['relatedDraft']['uuid']}" if "relatedDraft" in vote_json else None,
+        "draftTitle": vote_json['relatedDraft']['title'] if "relatedDraft" in vote_json else None
+    }
+    return voters_votes, vote_metadata
 
 
-def pull_coalition_votes(session_data: pd.DataFrame, excluded_vote_types=["Kohaloleku kontroll"]) -> pd.DataFrame:
+def pull_coalition_votes(session_data: pd.DataFrame, excluded_vote_types=["Kohaloleku kontroll"]) -> Tuple[
+    DataFrame, DataFrame]:
     vote_ids = session_data[~session_data.description.isin(excluded_vote_types)].index
     all_votes_dict = {}
+    all_votes_metadata = {}
     all_ids_length = len(vote_ids)
 
     out = display(progress(0, 100), display_id=True)
@@ -100,26 +110,33 @@ def pull_coalition_votes(session_data: pd.DataFrame, excluded_vote_types=["Kohal
     for i in range(all_ids_length):
         vote_id = vote_ids[i]
         vote_json = get_vote_json(vote_id)
-        voter_dict = get_voter_dict(vote_json)
+        voter_dict, vote_metadata = get_voter_dict(vote_json)
         all_votes_dict[vote_id] = voter_dict
+        all_votes_metadata[vote_id] = vote_metadata
 
         out.update(progress(i, all_ids_length))
     coalition_votes_df = pd.DataFrame.from_dict(all_votes_dict).transpose()
-    return coalition_votes_df
+    coalition_votes_metadata = pd.DataFrame.from_dict(all_votes_metadata).transpose()
+    return coalition_votes_df, coalition_votes_metadata
 
 
 def get_coalition_votes(session_data, selected_coalition):
     selected_coalition_folder = f"coalition_{selected_coalition}"
-    if "votes.parquet" in os.listdir(selected_coalition_folder):
+    if "votes.parquet" in os.listdir(selected_coalition_folder) and "metadata.parquet" in os.listdir(
+            selected_coalition_folder):
         print(f"Votes df found in {selected_coalition_folder}/votes.parquet")
         coalition_votes_df = pd.read_parquet(f"{selected_coalition_folder}/votes.parquet")
+        coalition_votes_metadata = pd.read_parquet(f"{selected_coalition_folder}/metadata.parquet")
+
     else:
         print("Pulling coalition votes from API")
-        coalition_votes_df = pull_coalition_votes(session_data, excluded_vote_types=["Kohaloleku kontroll"])
+        coalition_votes_df, coalition_votes_metadata = pull_coalition_votes(session_data,
+                                                                            excluded_vote_types=["Kohaloleku kontroll"])
         coalition_votes_df.to_parquet(f"{selected_coalition_folder}/votes.parquet")
+        coalition_votes_metadata.to_parquet(f"{selected_coalition_folder}/metadata.parquet")
         print(f"Votes df saved to {selected_coalition_folder}/votes.parquet")
 
-    return coalition_votes_df
+    return coalition_votes_df, coalition_votes_metadata
 
 
 def get_adjacency_matrix_df(votes_df: pd.DataFrame) -> pd.DataFrame:
@@ -128,7 +145,7 @@ def get_adjacency_matrix_df(votes_df: pd.DataFrame) -> pd.DataFrame:
     for name1 in votes_df.columns:
         adjacency_matrix[name1] = {}
         for name2 in votes_df.columns:
-            #if name2 == name1:
+            # if name2 == name1:
             #  continue
             if name2 not in adjacency_matrix:
                 adjacency_matrix[name2] = {}
@@ -154,3 +171,21 @@ def progress(value, max=100):
             {value}
         </progress>
     """.format(value=value, max=max))
+
+
+def get_fractions():
+    path = "fractions.parquet"
+    if path in os.listdir():
+        fractions_df = pd.read_parquet(path)
+        print(f"Fractions data already exists in {path}.")
+    else:
+        usergroups_json = get_payload("https://api.riigikogu.ee/api/usergroups")
+        party_groups = [g for g in usergroups_json if g['type']['code'] == 'FRAKTSIOON']
+        for g in party_groups:
+            g['link'] = g['_links']['self']['href']
+            del g['_links']
+            del g['type']
+        fractions_df = pd.DataFrame(party_groups)
+        fractions_df.to_parquet(path)
+        print(f"Saved fractions data to {path}")
+    return fractions_df

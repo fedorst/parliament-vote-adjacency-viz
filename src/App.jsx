@@ -18,18 +18,22 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const _ = getAnalytics(app);
 
 function App() {
   return (
     <div class={styles.App}>
         <header>
-            <h2>MP voting behavior, compared.</h2>
+            <h2>MP voting behavior comparison</h2>
         </header>
         <Chart/>
-        <a href={"https://github.com/fedorst" }>
-            <img src={ghlogo} alt={"A github logo hyperlink leading to my github page."} width="50px" height="50px"/>
-        </a>
+
+        <br />
+        <footer>
+            <a href={"https://github.com/fedorst" }>
+                <img src={ghlogo} alt={"A github logo hyperlink leading to my github page."} width="50px" height="50px"/>
+            </a>
+        </footer>
     </div>
   );
 }

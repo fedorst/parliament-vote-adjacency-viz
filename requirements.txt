@@ -1,8 +1,0 @@
-pandas==1.5.3
-requests==2.28.1
-networkx
-matplotlib
-seaborn
-pyarrow
-fastparquet
-numpy

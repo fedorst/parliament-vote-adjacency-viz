@@ -114,10 +114,11 @@ function Chart() {
                     right: 10,
                     start: 80,
                     end: 100,
-                    minValueSpan: 28,
-                    maxValueSpan: 28,
+                    minValueSpan: 32,
+                    maxValueSpan: 32,
                     handleSize: 20,
-                    brushSelect: false
+                    brushSelect: false,
+                    filterMode: 'none'
                 },
                 {
                     type: 'inside',
@@ -142,10 +143,6 @@ function Chart() {
                     data: relatedLinks.map(l => l.value),
                     color: relatedLinks.map(l => l.color),
                     type: 'bar',
-                    showBackground: true,
-                    backgroundStyle: {
-                        color: 'rgba(180, 180, 180, 0.2)'
-                    },
                     tooltip: {
                         formatter: `${name} and {b} similarity is {c}`,
                         position: 'right'

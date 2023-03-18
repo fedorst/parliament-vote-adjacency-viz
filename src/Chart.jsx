@@ -104,7 +104,10 @@ function Chart() {
         return {
             title: { text: `${name} voting similarity`},
             tooltip: {trigger: "item"},
-            grid: { containLabel: true },
+            grid: {
+                left: "40%",
+                containLabel: false
+            },
             dataZoom: [
                 {
                     type: 'slider',

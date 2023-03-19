@@ -1,0 +1,37 @@
+{
+  "52": {
+    "period": ["2022-07-18", "2023-03-14"],
+    "participantsShort": ["REF", "SDE", "I"],
+    "name": "Kaja Kallase teine valitsus"
+  },
+  "51": {
+    "period": ["2021-01-26", "2022-07-17"],
+    "participantsShort": ["REF", "KE"],
+    "name": "Kaja Kallase esimene valitsus"
+  },
+  "50": {
+    "period": ["2019-04-29", "2021-01-25"],
+    "participantsShort": ["EKRE", "I", "KE"],
+    "name": "Jüri Ratase teine valitsus"
+  },
+  "49": {
+    "period": ["2016-11-23", "2019-04-28"],
+    "participantsShort": ["KE", "SDE", "IRL"],
+    "name": "Jüri Ratase esimene valitsus"
+  },
+  "48": {
+    "period": ["2015-04-09", "2016-11-22"],
+    "participantsShort": ["REF", "SDE", "IRL"],
+    "name": "Taavi Rõivase teine valitsus"
+  },
+  "47": {
+    "period": ["2014-03-26", "2015-04-08"],
+    "participantsShort": ["REF", "SDE"],
+    "name": "Taavi Rõivase esimene valitsus"
+  },
+  "46": {
+    "period": ["2011-04-06", "2014-03-25"],
+    "participantsShort": ["REF", "IRL"],
+    "name": "Andrus Ansipi kolmas valitsus"
+  }
+}

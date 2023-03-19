@@ -18,18 +18,25 @@ const voteToColor = {
 
 function CardGroup(props) {
     const { identicalVotes, title } = { ...props };
+
+    const sortedVotes = () => {
+        let usedVotes = identicalVotes();
+        usedVotes?.sort((a, b) => b.date > a.date ? 1 : -1);
+        return usedVotes
+    }
+
     return (<div style={{
         width: "38%",
         height: "768px",
         display: 'inline-block',
     }}>
         <Show
-            when={identicalVotes() !== undefined}
+            when={sortedVotes() !== undefined}
             keyed
         >
             <Typography variant="h6" style={{ "font-weight": "bold"}}>{title()}</Typography>
             <Scrollbars>
-                <For each={identicalVotes()}>{(el) =>
+                <For each={sortedVotes()}>{(el) =>
                     <Card sx={{
                         minHeight: 180,
                         maxHeight: 180
@@ -43,23 +50,27 @@ function CardGroup(props) {
                     }}>
                         <CardContent>
                             <Typography sx={{ fontSize: 12 }} color={voteToColor[el.vote]} gutterBottom>
-                                {el.vote}<Show when={el?.draftLink} keyed>
-                                <IconButton
-                                    size="small"
-                                    color="secondary"
-                                    aria-label="look up"
-                                    href={el?.draftLink}
-                                >
-                                    <SearchIcon/>
-                                </IconButton>
-                            </Show>
+                                {el.vote}
                             </Typography>
                             <Typography variant="h6" sx={{ fontSize: 14 }} component="div" style={{"overflow-wrap": "break-word"}}>
                                 {el.description}
                             </Typography>
+                            <Typography variant="body2" sx={{ fontSize: 11 }} color="text.secondary">
+                                {el.date}
+                            </Typography>
                             <Show when={el?.draftTitle} keyed>
                                 <Typography variant="body2" sx={{ fontSize: 12 }} color="text.secondary">
                                     {clipString(el?.draftTitle, 110)}
+                                    <Show when={el?.draftLink} keyed>
+                                        <IconButton
+                                            size="small"
+                                            color="secondary"
+                                            aria-label="look up"
+                                            href={el?.draftLink}
+                                        >
+                                            <SearchIcon fontSize={"small"}/>
+                                        </IconButton>
+                                    </Show>
                                 </Typography>
                             </Show>
                         </CardContent>

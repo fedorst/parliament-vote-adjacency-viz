@@ -66,7 +66,7 @@ class ParliamentAPI:
 
 
     def get_session_data(self, coalition: str) -> pd.DataFrame:
-        if not self.session_data[coalition]:
+        if coalition not in self.session_data:
             coalition_path = f"coalition_{coalition}"
             if coalition_path not in os.listdir():
                 os.mkdir(coalition_path)
@@ -96,7 +96,6 @@ class ParliamentAPI:
                 "faction": voter["faction"]["name"],
                 "factionId": voter["faction"]["uuid"],
             }
-
         vote_metadata = {
             "description": vote_json["description"],
             "draftLink": f"https://www.riigikogu.ee/tegevus/eelnoud/eelnou/{vote_json['relatedDraft']['uuid']}" if "relatedDraft" in vote_json else None,
@@ -106,7 +105,8 @@ class ParliamentAPI:
             "inFavor": vote_json["inFavor"],
             "against": vote_json["against"],
             "neutral": vote_json["neutral"],
-            "abstained": vote_json["abstained"]
+            "abstained": vote_json["abstained"],
+            "date": vote_json["startDateTime"].split("T")[0]
         }
         return voters_votes, vote_metadata, voters_data
 
@@ -216,7 +216,7 @@ class ParliamentAPI:
 
         return 0
 
-    def get_adjacency_matrix_df(self, coalition, metric="count", included_vote_values=["POOLT", "VASTU", "ERAPOOLETU"]) -> pd.DataFrame:
+    def get_adjacency_matrix_df(self, coalition, metric="jaccards", included_vote_values=["POOLT", "VASTU", "ERAPOOLETU"]) -> pd.DataFrame:
         votes_df, _, _ = self.get_coalition_votes(coalition)
         votes_df_used = votes_df.copy()
         mask = votes_df_used.isin(included_vote_values)

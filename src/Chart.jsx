@@ -1,8 +1,8 @@
-import links from '/data/coalition_52/links.json';
-import nodes from '/data/coalition_52/nodes.json';
-import categories from '/data/coalition_52/categories.json';
-import votesMatrix from '/data/coalition_52/votesMatrix.json';
-import votesMetadata from '/data/coalition_52/votesMetadata.json';
+import links from '/data/coalition_51/links.json';
+import nodes from '/data/coalition_51/nodes.json';
+import categories from '/data/coalition_51/categories.json';
+import votesMatrix from '/data/coalition_51/votesMatrix.json';
+import votesMetadata from '/data/coalition_51/votesMetadata.json';
 import * as echarts from "echarts";
 import {createSignal, onMount} from "solid-js";
 import CardGroup from "./CardGroup";

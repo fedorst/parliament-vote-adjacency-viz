@@ -6,10 +6,10 @@ import requests
 import pandas as pd
 import os
 from IPython.display import HTML, display
-
-from pandas import DataFrame
+import json
 
 adjacencyMetrics = ["count", "jaccards"]
+
 
 def get_payload(url, verbose=False):
     response = requests.get(url)
@@ -23,14 +23,7 @@ def get_payload(url, verbose=False):
 
 
 class ParliamentAPI:
-    coalitions = {
-        "52": ["2022-07-18", "2023-03-14"],
-        "51": ["2021-01-26", "2022-07-17"],
-        "50": ["2019-04-29", "2021-01-25"],
-        "49": ["2016-11-23", "2019-04-28"],
-        "48": ["2015-04-09", "2016-11-22"],
-        "47": ["2014-03-26", "2015-04-08"]
-    }
+    coalitions = json.load(open("coalitionData.json"))
 
     def __init__(self):
         self.session_data = {}
@@ -63,8 +56,6 @@ class ParliamentAPI:
         session_data = pd.DataFrame.from_dict(vote_dict, orient="index")
         return session_data
 
-
-
     def get_session_data(self, coalition: str) -> pd.DataFrame:
         if coalition not in self.session_data:
             coalition_path = f"coalition_{coalition}"
@@ -75,7 +66,7 @@ class ParliamentAPI:
                 print(f"Session data already exists in {session_path}")
                 session_data = pd.read_parquet(session_path)
             else:
-                start_date, end_date = ParliamentAPI.coalitions[coalition]
+                start_date, end_date = ParliamentAPI.coalitions[coalition]["period"]
                 session_json = ParliamentAPI.get_session_json(start_date, end_date)
                 session_data = ParliamentAPI.transform_session_json(session_json)
                 print(f"Saving session data to {session_path}")
@@ -91,11 +82,15 @@ class ParliamentAPI:
             uuid = voter["uuid"]
             name = voter["fullName"]
             voters_votes[uuid] = voter["decision"]["code"]
-            voters_data[uuid] = {
-                "name": name,
-                "faction": voter["faction"]["name"],
-                "factionId": voter["faction"]["uuid"],
-            }
+            try:
+                voters_data[uuid] = {
+                    "name": name,
+                    "faction": voter["faction"]["name"],
+                    "factionId": voter["faction"]["uuid"],
+                }
+            except:
+                # TODO: figure something out for when faction is Null
+                print(voter)
         vote_metadata = {
             "description": vote_json["description"],
             "draftLink": f"https://www.riigikogu.ee/tegevus/eelnoud/eelnou/{vote_json['relatedDraft']['uuid']}" if "relatedDraft" in vote_json else None,
@@ -125,7 +120,7 @@ class ParliamentAPI:
         all_ids_length = len(vote_ids)
         voter_data_dict = {}
 
-        out = display(progress(0, 100), display_id=True)
+        # out = display(progress(0, 100), display_id=True)
 
         for i in range(all_ids_length):
             vote_id = vote_ids[i]
@@ -135,7 +130,7 @@ class ParliamentAPI:
             all_votes_metadata[vote_id] = vote_metadata
             voter_data_dict.update(voters_data)
 
-            out.update(progress(i, all_ids_length))
+            # out.update(progress(i, all_ids_length))
         coalition_votes_df = pd.DataFrame.from_dict(all_votes_dict).transpose()
         coalition_votes_metadata = pd.DataFrame.from_dict(all_votes_metadata).transpose()
         voter_data = pd.DataFrame.from_dict(voter_data_dict).transpose()
@@ -145,10 +140,11 @@ class ParliamentAPI:
         pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
         if not all([selected_coalition in d for d in
-                [self.coalition_votes_data, self.coalition_votes_metadata, self.voter_data]]):
+                    [self.coalition_votes_data, self.coalition_votes_metadata, self.voter_data]]):
 
             selected_coalition_folder = f"coalition_{selected_coalition}"
-
+            if selected_coalition_folder not in os.listdir():
+                os.mkdir(selected_coalition_folder)
             if all(f in os.listdir(selected_coalition_folder) for f in
                    ["votes.parquet", "metadata.parquet", "voters.parquet"]):
                 print(f"Votes df found in {selected_coalition_folder}/votes.parquet")
@@ -193,7 +189,6 @@ class ParliamentAPI:
             self.fractions_data = fractions_data
         return self.fractions_data
 
-
     def calculate_adjacency_value(s1: pd.Series, s2: pd.Series, metric):
         equal_votes = (s1 == s2).dropna()
 
@@ -212,11 +207,12 @@ class ParliamentAPI:
             if s1_votes == 0 or s2_votes == 0:
                 return 0
             total_equal_votes = equal_votes.sum()
-            return math.sqrt((total_equal_votes/s1_votes)*(total_equal_votes/s2_votes))
+            return math.sqrt((total_equal_votes / s1_votes) * (total_equal_votes / s2_votes))
 
         return 0
 
-    def get_adjacency_matrix_df(self, coalition, metric="jaccards", included_vote_values=["POOLT", "VASTU", "ERAPOOLETU"]) -> pd.DataFrame:
+    def get_adjacency_matrix_df(self, coalition, metric="jaccards",
+                                included_vote_values=["POOLT", "VASTU", "ERAPOOLETU"]) -> pd.DataFrame:
         votes_df, _, _ = self.get_coalition_votes(coalition)
         votes_df_used = votes_df.copy()
         mask = votes_df_used.isin(included_vote_values)
@@ -233,7 +229,8 @@ class ParliamentAPI:
                 if name2 in adjacency_matrix[name1]:
                     adjacency_matrix[name2][name1] = adjacency_matrix[name1][name2]
                 else:
-                    adjacency_value = ParliamentAPI.calculate_adjacency_value(votes_df_used[name1], votes_df_used[name2], metric)
+                    adjacency_value = ParliamentAPI.calculate_adjacency_value(votes_df_used[name1],
+                                                                              votes_df_used[name2], metric)
                     adjacency_matrix[name1][name2] = adjacency_value
                 processed_names.add(name1)
         adjacency_matrix_df = pd.DataFrame.from_dict(adjacency_matrix)
@@ -262,7 +259,7 @@ def get_adjacency_matrix_df(votes_df: pd.DataFrame) -> pd.DataFrame:
     return adjacency_matrix_df
 
 
-def progress(value: int, max=100) -> HTML:
+def progress(value: int, max_progress=100) -> HTML:
     return HTML("""
         <progress
             value='{value}'
@@ -271,4 +268,4 @@ def progress(value: int, max=100) -> HTML:
         >
             {value}
         </progress>
-    """.format(value=value, max=max))
+    """.format(value=value, max=max_progress))

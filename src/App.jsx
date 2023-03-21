@@ -27,7 +27,6 @@ function App() {
             <h2>MP voting behavior comparison</h2>
         </header>
         <Chart/>
-
         <br />
         <footer>
             <a href={"https://github.com/fedorst" }>

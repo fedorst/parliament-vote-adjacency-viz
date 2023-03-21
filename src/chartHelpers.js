@@ -130,10 +130,11 @@ const getOnGraphClick = (nodeIdToName, nodeIdToCategory, links, barChartInstance
     };
 };
 
+const permittedVoteValues = ["POOLT", "VASTU", "ERAPOOLETU"];
+const forbiddenVoteTypes = ["Päevakorra kinnitamine", "Töö ajagraafiku kehtestamine"]
+
 const getOnBarClick = (nameToNodeId,
                        nodeIdToName,
-                       permittedVoteValues,
-                       forbiddenVoteTypes,
                        barChartInstance,
                        setIdenticalVoteProps,
                        setCardGroupTitle) => {

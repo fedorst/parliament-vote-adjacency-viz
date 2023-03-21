@@ -1,7 +1,7 @@
 import links from '/data/coalition_51/links.json';
 import nodes from '/data/coalition_51/nodes.json';
 import categories from '/data/coalition_51/categories.json';
-import {createSignal} from "solid-js";
+import {createSignal, onMount} from "solid-js";
 import CardGroup from "./CardGroup";
 import ChartGraph from "./ChartGraph";
 import ChartBar from "./ChartBar";
@@ -24,31 +24,36 @@ function Chart() {
     const [barChartInstance, setBarChartInstance] = createSignal();
     const [identicalVoteProps, setIdenticalVoteProps] = createSignal();
     const [cardGroupTitle, setCardGroupTitle] = createSignal("");
+    const [selectedPolitician1, selectPolitician1] = createSignal("");
+    const [selectedPolitician2, selectPolitician2] = createSignal("");
+    const [chartData, setChartData] = createSignal();
 
-    const newCategories = categories
-        .map((c) => ({ ...c, itemStyle: { color: c.color } }));
-    const newLinks = links
-        .map((l) => ({ ...l, lineStyle: { opacity: l.value**4 }}))
-        .filter(l => l.value > linkThreshold);
-    const newNodes = nodes
-        .map((n) => ({...n, label: { show: true }}));
-    const nodeIdToName = {}
-    newNodes.forEach((n) => { nodeIdToName[n["id"]] = n["name"]; })
-    const nameToNodeId = flip(nodeIdToName);
-    const nodeIdToCategory = {}
-    newNodes.forEach((n) => {
-        nodeIdToCategory[n["id"]] = newCategories[n["category"]];
+    onMount(() => {
+        const newCategories = categories
+            .map((c) => ({ ...c, itemStyle: { color: c.color } }));
+        const newLinks = links
+            .map((l) => ({ ...l, lineStyle: { opacity: l.value**4 }}))
+            .filter(l => l.value > linkThreshold);
+        const newNodes = nodes
+            .map((n) => ({...n, label: { show: true }}));
+        const nodeIdToName = {}
+        newNodes.forEach((n) => { nodeIdToName[n["id"]] = n["name"]; })
+        const nameToNodeId = flip(nodeIdToName);
+        const nodeIdToCategory = {}
+        newNodes.forEach((n) => {
+            nodeIdToCategory[n["id"]] = newCategories[n["category"]];
+        })
+
+        setChartData({
+            nodes: newNodes,
+            links: newLinks,
+            categories: newCategories,
+            unfilteredLinks: links,
+            nodeIdToCategory,
+            nodeIdToName,
+            nameToNodeId
+        });
     })
-
-    const chartData = {
-        nodes: newNodes,
-        links: newLinks,
-        categories: newCategories,
-        unfilteredLinks: links,
-        nodeIdToCategory,
-        nodeIdToName,
-        nameToNodeId
-    }
 
     return (
         <row>

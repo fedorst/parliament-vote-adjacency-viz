@@ -5,6 +5,7 @@ import {getGraphOption, getOnGraphClick} from "./chartHelpers";
 function ChartGraph({chartData, barChartInstance, style=undefined, }) {
     let chart;
     onMount(() => {
+        chartData = chartData();
         const graphChart = echarts.init(chart, null, {
             renderer: 'canvas',
             useDirtyRect: false

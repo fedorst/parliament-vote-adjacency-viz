@@ -6,7 +6,7 @@ function ChartBar({chartData, barChartInstance, setBarChartInstance, setIdentica
     let chart;
 
     onMount(() => {
-
+        chartData = chartData();
         const barChart = echarts.init(chart, null, {
             renderer: 'canvas',
             useDirtyRect: false

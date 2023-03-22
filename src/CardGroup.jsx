@@ -17,7 +17,7 @@ const voteToColor = {
 }
 
 function CardGroup(props) {
-    const { identicalVotes, title } = { ...props };
+    const { identicalVotes, title, style } = { ...props };
 
     const sortedVotes = () => {
         let usedVotes = identicalVotes();
@@ -25,11 +25,7 @@ function CardGroup(props) {
         return usedVotes
     }
 
-    return (<div style={{
-        width: "38%",
-        height: "768px",
-        display: 'inline-block',
-    }}>
+    return (<div style={style}>
         <Show
             when={sortedVotes() !== undefined}
             keyed

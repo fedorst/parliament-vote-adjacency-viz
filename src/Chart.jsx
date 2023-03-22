@@ -5,6 +5,7 @@ import {createSignal, onMount} from "solid-js";
 import CardGroup from "./CardGroup";
 import ChartGraph from "./ChartGraph";
 import ChartBar from "./ChartBar";
+import {Grid} from "@suid/material";
 
 const flip = (data) => Object.fromEntries(
     Object
@@ -56,30 +57,41 @@ function Chart() {
     })
 
     return (
-        <row>
-            <ChartGraph
-                style={{
-                    width: "28%",
+        <Grid container spacing={2}>
+            <Grid item xs={12} lg={6} xl={4}>
+                <ChartGraph
+                    style={{
+                        height: "724px",
+                    }}
+                    chartData={chartData}
+                    barChartInstance={barChartInstance}
+                />
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+                <ChartBar
+                    style={{
                     height: "724px",
-                    display: 'inline-block'
-            }}
-                chartData={chartData}
-                barChartInstance={barChartInstance}
-            />
-            <ChartBar
-                style={{
-                    width: "28%",
-                    height: "724px",
-                    display: 'inline-block'
-            }}
-                chartData={chartData}
-                barChartInstance={barChartInstance}
-                setBarChartInstance={setBarChartInstance}
-                setIdenticalVoteProps={setIdenticalVoteProps}
-                setCardGroupTitle={setCardGroupTitle}
-            />
-            <CardGroup identicalVotes={identicalVoteProps} title={cardGroupTitle}/>
-        </row>
+                }}
+                    chartData={chartData}
+                    barChartInstance={barChartInstance}
+                    setBarChartInstance={setBarChartInstance}
+                    setIdenticalVoteProps={setIdenticalVoteProps}
+                    setCardGroupTitle={setCardGroupTitle}
+                    />
+            </Grid>
+            <Grid item xs={12} md={6} lg={4}>
+                <CardGroup
+                    style={{
+                        height: "768px",
+                    }}
+                    identicalVotes={identicalVoteProps}
+                    title={cardGroupTitle}/>
+            </Grid>
+        </Grid>
+
+
+
+
     );
 }
 

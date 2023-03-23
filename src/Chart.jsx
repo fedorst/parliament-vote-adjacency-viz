@@ -46,6 +46,9 @@ function Chart({ selectedCoalition }) {
         const votesMatrix = (await import(`../data/coalition_${selectedCoalition()}/votesMatrix.json`)).default
         const votesMetadata = (await import(`../data/coalition_${selectedCoalition()}/votesMetadata.json`)).default
 
+        selectPolitician1("")
+        selectPolitician2("")
+
         setChartData({
             nodes: newNodes,
             links: newLinks,
@@ -71,12 +74,12 @@ function Chart({ selectedCoalition }) {
                         chartData={chartData}
                         barChartInstance={barChartInstance}
                         selectPolitician1={selectPolitician1}
+                        selectPolitician2={selectPolitician2}
                     />
                 </Grid>
                 <Grid item xs={12} md={5} lg={4}>
                     <Show when={selectedPolitician1() !== ""} keyed>
                         <Typography variant="h6" style={{ "font-weight": "bold"}}>{`${selectedPolitician1()} most similar voters`}</Typography>
-                    </Show>
                     <ChartBar
                         style={{
                         height: "724px",
@@ -88,16 +91,17 @@ function Chart({ selectedCoalition }) {
                         selectedPolitician1={selectedPolitician1()}
                         selectPolitician2={selectPolitician2}
                         />
+                    </Show>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4}>
                     <Show when={selectedPolitician2() !== ""} keyed>
                         <Typography variant="h6" style={{ "font-weight": "bold"}}>{`${selectedPolitician1()} and ${selectedPolitician2()} vote similarity`}</Typography>
-                    </Show>
                     <CardGroup
                         style={{
                             height: "724px",
                         }}
                         identicalVotes={identicalVoteProps}/>
+                    </Show>
                 </Grid>
             </Grid>
         </Show>

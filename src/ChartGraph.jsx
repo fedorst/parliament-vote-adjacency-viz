@@ -17,6 +17,7 @@ function ChartGraph(props) {
             getOnGraphClick(
                 props.chartData,
                 props.selectPolitician1,
+                props.selectPolitician2,
                 props.barChartInstance
             )
         )

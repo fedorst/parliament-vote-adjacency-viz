@@ -118,13 +118,13 @@ const getBarOption = (id, nodeIdToName, nodeIdToCategory, links) => {
     };
 };
 
-const getOnGraphClick = (chartData, selectPolitician1, barChartInstance) => {
+const getOnGraphClick = (chartData, selectPolitician1, selectPolitician2, barChartInstance) => {
     return (n) => {
         const { nodeIdToName, nodeIdToCategory, unfilteredLinks } = chartData();
         const id = n['data']['id'];
         selectPolitician1(nodeIdToName[id]);
+        selectPolitician2("");
         const barOption = getBarOption(id, nodeIdToName, nodeIdToCategory, unfilteredLinks); // use unfiltered links
-        barChartInstance().hideLoading();
         barChartInstance().setOption(barOption);
     };
 };
@@ -138,16 +138,13 @@ const getOnBarClick = (chartData,
                        selectPolitician2
 ) => {
     return (n) => {
-        const {nameToNodeId, nodeIdToName, votesMatrix, votesMetadata} = chartData();
+        const {nameToNodeId, votesMatrix, votesMetadata} = chartData();
         const prevId = barChartInstance().getOption()["name"]["id"];
         const id = nameToNodeId[n['name']];
         selectPolitician2(n['name']);
         const arr1 = votesMatrix[prevId];
         const arr2 = votesMatrix[id];
         const identicalVotes = [];
-        console.log(nodeIdToName[barChartInstance().getOption()["name"]])
-        console.log(n["name"])
-        console.log(arr1)
         Object.keys(arr1).forEach((key) => {
             if (arr1[key] === arr2[key] && permittedVoteValues.includes(arr1[key]) && !forbiddenVoteTypes.includes(votesMetadata[key]["description"])) {
                 const o = {...votesMetadata[key]}
@@ -155,7 +152,6 @@ const getOnBarClick = (chartData,
                 identicalVotes.push(o);
             }
         });
-        console.log("setting identical votes", identicalVotes.length, identicalVotes)
         setIdenticalVoteProps(identicalVotes);
     };
 }

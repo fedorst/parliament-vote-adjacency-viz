@@ -10,10 +10,6 @@ function ChartBar(props) {
             renderer: 'canvas',
             useDirtyRect: false
         });
-        barChart.showLoading({
-            text: "Please select a node from the graph on the left",
-            showSpinner: false,
-            maskColor: 'rgba(255, 255, 255, 0)',})
         barChart.setOption({});
         barChart.on(
             'click',

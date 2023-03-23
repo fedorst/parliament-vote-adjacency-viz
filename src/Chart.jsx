@@ -78,7 +78,7 @@ function Chart({ selectedCoalition }) {
                     />
                 </Grid>
                 <Grid item xs={12} md={5} lg={4}>
-                    <Show when={selectedPolitician1() !== ""} keyed>
+                    <Show when={selectedPolitician1() !== ""} fallback={"Please select a MP from the graph"} keyed>
                         <Typography variant="h6" style={{ "font-weight": "bold"}}>{`${selectedPolitician1()} most similar voters`}</Typography>
                     <ChartBar
                         style={{
@@ -94,7 +94,7 @@ function Chart({ selectedCoalition }) {
                     </Show>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4}>
-                    <Show when={selectedPolitician2() !== ""} keyed>
+                    <Show when={selectedPolitician2() !== ""} fallback={"Please select a comparison MP from the bar chart"} keyed>
                         <Typography variant="h6" style={{ "font-weight": "bold"}}>{`${selectedPolitician1()} and ${selectedPolitician2()} vote similarity`}</Typography>
                     <CardGroup
                         style={{

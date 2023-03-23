@@ -6,17 +6,15 @@ from parliamentApiHelpers import ParliamentAPI
 
 
 def get_links(adjacency_matrix: pd.DataFrame) -> pd.DataFrame:
-    adjacency_matrix.values[[np.arange(len(adjacency_matrix))] * 2] = np.nan
-    return adjacency_matrix.stack().reset_index().rename(
-        columns={"level_0": "source", "level_1": "target", 0: "value"})
-
+    np.fill_diagonal(adjacency_matrix.values, np.nan)
+    return adjacency_matrix.stack().reset_index().rename(columns={"level_0": "source", "level_1": "target", 0: "value"})
 
 def get_categories(
         fractions_df: pd.DataFrame,
         voter_df: pd.DataFrame
 ) -> pd.DataFrame:
-    return fractions_df[fractions_df.index.isin(voter_df.factionId.unique())][["name", "colorHex"]].dropna(
-        subset=["colorHex"]).reset_index().rename(columns={"uuid": "id", "colorHex": "color"})
+    return fractions_df[fractions_df.index.isin(voter_df.factionId.unique())][["name", "shortName", "colorHex"]].dropna(
+        subset=["colorHex"]).reset_index().rename(columns={"uuid": "id", "colorHex": "color", "shortName": "nameShort"})
 
 
 def get_nodes(
@@ -51,6 +49,7 @@ def generate_json(
 
 
 if __name__ == "__main__":
+    # python generateJson 52 jaccards
     args = sys.argv
     if len(args) >= 2:
         coalitions = json.load(open("coalitionData.json"))

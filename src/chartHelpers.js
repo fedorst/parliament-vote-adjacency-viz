@@ -1,7 +1,5 @@
-import votesMatrix from "../data/coalition_51/votesMatrix.json";
-import votesMetadata from "../data/coalition_51/votesMetadata.json";
-
-const getGraphOption = (nodes, links, categories) => {
+const getGraphOption = (chartData) => {
+    const { nodes, links, categories } = chartData();
     return {
         title: {
             // text: '52. coalition',
@@ -9,15 +7,14 @@ const getGraphOption = (nodes, links, categories) => {
             left: 'right'
         },
         tooltip: {
-            trigger: "item"
+            trigger: "item",
+            position: 'right'
         },
-        legend: [
-            {
-                data: categories.map(function (a) {
-                    return a.name;
-                })
-            }
-        ],
+        legend: {
+                formatter: (name) => {
+                    return categories.find(c=>c.name === name)?.nameShort;
+                }
+            },
         animationDurationUpdate: 1500,
         animationEasingUpdate: 'quinticInOut',
         series: [
@@ -46,7 +43,7 @@ const getGraphOption = (nodes, links, categories) => {
                         if (e['dataType'] !== 'edge') {
                             return `${e['name']} - ${categories[e['data']['category']]['name']}`;
                         }
-                        return '';
+                        return undefined;
                     }
                 }
             }
@@ -68,7 +65,7 @@ const getBarOption = (id, nodeIdToName, nodeIdToCategory, links) => {
 
     return {
         name: { id },
-        title: { text: `${name} voting similarity`},
+        // title: { text: `${name} voting similarity`},
         tooltip: {trigger: "item"},
         grid: {
             left: "40%",
@@ -121,10 +118,12 @@ const getBarOption = (id, nodeIdToName, nodeIdToCategory, links) => {
     };
 };
 
-const getOnGraphClick = (nodeIdToName, nodeIdToCategory, links, barChartInstance) => {
+const getOnGraphClick = (chartData, selectPolitician1, barChartInstance) => {
     return (n) => {
+        const { nodeIdToName, nodeIdToCategory, unfilteredLinks } = chartData();
         const id = n['data']['id'];
-        const barOption = getBarOption(id, nodeIdToName, nodeIdToCategory, links); // use unfiltered links
+        selectPolitician1(nodeIdToName[id]);
+        const barOption = getBarOption(id, nodeIdToName, nodeIdToCategory, unfilteredLinks); // use unfiltered links
         barChartInstance().hideLoading();
         barChartInstance().setOption(barOption);
     };
@@ -133,18 +132,22 @@ const getOnGraphClick = (nodeIdToName, nodeIdToCategory, links, barChartInstance
 const permittedVoteValues = ["POOLT", "VASTU", "ERAPOOLETU"];
 const forbiddenVoteTypes = ["Päevakorra kinnitamine", "Töö ajagraafiku kehtestamine"]
 
-const getOnBarClick = (nameToNodeId,
-                       nodeIdToName,
+const getOnBarClick = (chartData,
                        barChartInstance,
                        setIdenticalVoteProps,
-                       setCardGroupTitle) => {
+                       selectPolitician2
+) => {
     return (n) => {
+        const {nameToNodeId, nodeIdToName, votesMatrix, votesMetadata} = chartData();
         const prevId = barChartInstance().getOption()["name"]["id"];
         const id = nameToNodeId[n['name']];
-
+        selectPolitician2(n['name']);
         const arr1 = votesMatrix[prevId];
         const arr2 = votesMatrix[id];
         const identicalVotes = [];
+        console.log(nodeIdToName[barChartInstance().getOption()["name"]])
+        console.log(n["name"])
+        console.log(arr1)
         Object.keys(arr1).forEach((key) => {
             if (arr1[key] === arr2[key] && permittedVoteValues.includes(arr1[key]) && !forbiddenVoteTypes.includes(votesMetadata[key]["description"])) {
                 const o = {...votesMetadata[key]}
@@ -152,9 +155,8 @@ const getOnBarClick = (nameToNodeId,
                 identicalVotes.push(o);
             }
         });
+        console.log("setting identical votes", identicalVotes.length, identicalVotes)
         setIdenticalVoteProps(identicalVotes);
-        const cardGroupTitle = `${nodeIdToName[prevId]} and ${nodeIdToName[id]} matching votes`
-        setCardGroupTitle(cardGroupTitle);
     };
 }
 

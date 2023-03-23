@@ -1,24 +1,27 @@
-import {onMount} from "solid-js";
+import {createEffect} from "solid-js";
 import * as echarts from "echarts";
 import {getGraphOption, getOnGraphClick} from "./chartHelpers";
 
-function ChartGraph({chartData, barChartInstance, style=undefined, }) {
+function ChartGraph(props) {
     let chart;
-    onMount(() => {
-        chartData = chartData();
+    createEffect(() => {
         const graphChart = echarts.init(chart, null, {
             renderer: 'canvas',
             useDirtyRect: false
         });
-        graphChart.setOption(getGraphOption(chartData.nodes, chartData.links, chartData.categories))
+        graphChart.setOption(getGraphOption(
+            props.chartData))
         graphChart.on(
             'click',
             { dataType: 'node' },
-            getOnGraphClick(chartData.nodeIdToName, chartData.nodeIdToCategory, chartData.unfilteredLinks, barChartInstance)
+            getOnGraphClick(
+                props.chartData,
+                props.selectPolitician1,
+                props.barChartInstance
+            )
         )
-
     })
-    return <div ref={chart} style={style}/>
+    return <div ref={chart} style={props.style}/>
 }
 
 export default ChartGraph;

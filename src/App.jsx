@@ -3,6 +3,8 @@ import Chart from "./Chart";
 import ghlogo from "/github-mark.png";
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import {createSignal} from "solid-js";
+import CoalitionSelect from "./CoalitionSelect";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -18,21 +20,23 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const _ = getAnalytics(app);
+// const _ = getAnalytics(app);
+
+function GithubLink() {
+    return <a href={"https://github.com/fedorst/parliament-vote-adjacency-viz" }>
+        <img src={ghlogo} alt={"A github logo hyperlink leading to the github repo."} width="50px" height="50px"/>
+    </a>
+}
 
 function App() {
-  return (
+    const [selectedCoalition, selectCoalition] = createSignal("52");
+    return (
     <div class={styles.App}>
-        <header>
-            <h2>MP voting behavior comparison</h2>
-        </header>
-        <Chart/>
-        <br />
-        <footer>
-            <a href={"https://github.com/fedorst" }>
-                <img src={ghlogo} alt={"A github logo hyperlink leading to my github page."} width="50px" height="50px"/>
-            </a>
-        </footer>
+        <div style={{"margin-top": "14px", display: "flex", "align-items": "flex-start", "justify-content": "space-evenly"}}>
+        <h2>MP voting behavior comparison</h2> <CoalitionSelect selectedCoalition={selectedCoalition} selectCoalition={selectCoalition}/> <GithubLink/>
+        </div>
+        <Chart selectedCoalition={selectedCoalition}/>
+        <br/>>
     </div>
   );
 }

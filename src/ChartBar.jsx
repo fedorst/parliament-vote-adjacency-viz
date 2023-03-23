@@ -1,12 +1,11 @@
 import * as echarts from "echarts";
 import {getOnBarClick} from "./chartHelpers";
-import {onMount} from "solid-js";
+import {createEffect} from "solid-js";
 
-function ChartBar({chartData, barChartInstance, setBarChartInstance, setIdenticalVoteProps, setCardGroupTitle, style=undefined}) {
+function ChartBar(props) {
     let chart;
 
-    onMount(() => {
-        chartData = chartData();
+    createEffect(() => {
         const barChart = echarts.init(chart, null, {
             renderer: 'canvas',
             useDirtyRect: false
@@ -18,16 +17,15 @@ function ChartBar({chartData, barChartInstance, setBarChartInstance, setIdentica
         barChart.setOption({});
         barChart.on(
             'click',
-            getOnBarClick(chartData.nameToNodeId,
-                chartData.nodeIdToName,
-                barChartInstance,
-                setIdenticalVoteProps,
-                setCardGroupTitle)
+            getOnBarClick(props.chartData,
+                props.barChartInstance,
+                props.setIdenticalVoteProps,
+                props.selectPolitician2)
         );
-        setBarChartInstance(barChart);
+        props.setBarChartInstance(barChart);
     })
 
-    return <div ref={chart} style={style}/>
+    return <div ref={chart} style={props.style}/>
 }
 
 export default ChartBar;

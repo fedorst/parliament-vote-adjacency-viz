@@ -1,4 +1,4 @@
-import {For, Show} from "solid-js";
+import {createEffect, createSignal, For, Show} from "solid-js";
 import {Card, CardContent, IconButton, Typography} from "@suid/material";
 import Scrollbars from "solid-custom-scrollbars";
 import SearchIcon from "@suid/icons-material/Search";
@@ -17,20 +17,20 @@ const voteToColor = {
 }
 
 function CardGroup(props) {
-    const { identicalVotes, title, style } = { ...props };
+    const { identicalVotes, style } = { ...props };
+    const [sortedVotes, setSortedVotes] = createSignal()
 
-    const sortedVotes = () => {
+    createEffect(() => {
         let usedVotes = identicalVotes();
         usedVotes?.sort((a, b) => b.date > a.date ? 1 : -1);
-        return usedVotes
-    }
+        setSortedVotes(usedVotes);
+    });
 
     return (<div style={style}>
         <Show
             when={sortedVotes() !== undefined}
             keyed
         >
-            <Typography variant="h6" style={{ "font-weight": "bold"}}>{title()}</Typography>
             <Scrollbars>
                 <For each={sortedVotes()}>{(el) =>
                     <Card sx={{
@@ -38,7 +38,7 @@ function CardGroup(props) {
                         maxHeight: 180
                     }} style={{
                         "display": "inline-block",
-                        "width": "30%",
+                        "width": "45%",
                         "margin-right": "6px",
                         "margin-left": "6px",
                         "margin-top": "6px",

@@ -5,12 +5,65 @@ import numpy as np
 import requests
 import pandas as pd
 import os
-from IPython.display import HTML, display
 import json
 
 adjacencyMetrics = ["count", "jaccards"]
 
+# in some coalitions the following persons don't have a faction object attached to them in the json
+# they tend to be ministers or replacement members for ministers
+fullNameToFaction = {
+    "Mart Nutt": "Isamaa fraktsioon",
+    "Alar Laneman": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+    "Siim Kiisler": "Isamaa ja Res Publica Liidu fraktsioon",
+    "Etti Kagarov": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+    "Sven Mikser": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+    "Urve Palo": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+    "Neeme Suur": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+    "Anneli Ott": "Eesti Keskerakonna fraktsioon",
+    "Oudekki Loone": "Eesti Keskerakonna fraktsioon",
+    "Toomas Jürgenstein": "Sotsiaaldemokraatliku Erakonna fraktsioon",
 
+}
+
+"""
+,
+  "47": {
+    "period": ["2014-03-26", "2015-04-08"],
+    "participantsShort": ["REF", "SDE"],
+    "name": "Taavi Rõivase esimene valitsus"
+  },
+  "46": {
+    "period": ["2011-04-06", "2014-03-25"],
+    "participantsShort": ["REF", "IRL"],
+    "name": "Andrus Ansipi kolmas valitsus"
+  }
+"""
+
+"""
+# XII riigikogu, lots of missing fraction data
+"Jaak Aaviksoo": "Isamaa ja Res Publica Liidu fraktsioon",
+"Andrus Ansip": "Eesti Reformierakonna fraktsioon",
+"Juhan Parts": "Isamaa ja Res Publica Liidu fraktsioon",
+"Kairit Pihlak": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+"Barbi Pilvre": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+"Urmas Reinsalu": "Isamaa ja Res Publica Liidu fraktsioon",
+"Katrin Saks": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+"Helir-Valdor Seeder": "Isamaa ja Res Publica Liidu fraktsioon",
+"Tiit Tammsaar": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+"Ken-Marti Vaher": "Isamaa ja Res Publica Liidu fraktsioon",
+"Maimu Berg": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+"Tatjana Jaanson": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+"Margus Lepik": "Eesti Reformierakonna fraktsioon",
+"Reet Roos": "Isamaa ja Res Publica Liidu fraktsioon",
+"Yana Toom": "Eesti Keskerakonna fraktsioon",
+"Kalev Kallemets": "Eesti Reformierakonna fraktsioon",
+"Andre Sepp": "Eesti Reformierakonna fraktsioon",
+"Vilja Toomast": "Eesti Reformierakonna fraktsioon", # after 2013
+"Mihhail Korb": "Eesti Keskerakonna fraktsioon",
+"Siret Kotka": "Eesti Keskerakonna fraktsioon",
+"Tarmo Leinatamm": "Eesti Reformierakonna fraktsioon",
+"Innar Mäesalu": "Eesti Reformierakonna fraktsioon"
+"""
 def get_payload(url, verbose=False):
     response = requests.get(url)
     if verbose:
@@ -78,6 +131,7 @@ class ParliamentAPI:
         voters = vote_json["voters"]
         voters_votes = {}
         voters_data = {}
+        missingFaction = []
         for voter in voters:
             uuid = voter["uuid"]
             name = voter["fullName"]
@@ -89,8 +143,16 @@ class ParliamentAPI:
                     "factionId": voter["faction"]["uuid"],
                 }
             except:
-                # TODO: figure something out for when faction is Null
-                print(voter)
+                fullName = voter['fullName']
+                if fullName not in missingFaction:
+                    print(f"{fullName} no faction found! Filling with {fullNameToFaction[fullName]}")
+                    missingFaction.append(fullName)
+                voters_data[uuid] = {
+                    "name": name,
+                    "faction": fullNameToFaction[fullName],
+                    "factionId": None
+                }
+
         vote_metadata = {
             "description": vote_json["description"],
             "draftLink": f"https://www.riigikogu.ee/tegevus/eelnoud/eelnou/{vote_json['relatedDraft']['uuid']}" if "relatedDraft" in vote_json else None,
@@ -120,8 +182,6 @@ class ParliamentAPI:
         all_ids_length = len(vote_ids)
         voter_data_dict = {}
 
-        # out = display(progress(0, 100), display_id=True)
-
         for i in range(all_ids_length):
             vote_id = vote_ids[i]
             vote_json = ParliamentAPI.get_vote_json(vote_id)
@@ -130,7 +190,13 @@ class ParliamentAPI:
             all_votes_metadata[vote_id] = vote_metadata
             voter_data_dict.update(voters_data)
 
-            # out.update(progress(i, all_ids_length))
+        # fix some missing factions and factionIds
+        factionData = [v for k,v in voter_data_dict.items()]
+        factionData = dict([item["faction"], item["factionId"]] for item in factionData if item["factionId"] is not None)
+        for uuid in voter_data_dict:
+            if voter_data_dict[uuid]["factionId"] is None:
+                voter_data_dict[uuid]["factionId"] = factionData[voter_data_dict[uuid]["faction"]]
+
         coalition_votes_df = pd.DataFrame.from_dict(all_votes_dict).transpose()
         coalition_votes_metadata = pd.DataFrame.from_dict(all_votes_metadata).transpose()
         voter_data = pd.DataFrame.from_dict(voter_data_dict).transpose()
@@ -181,6 +247,8 @@ class ParliamentAPI:
                     g['link'] = g['_links']['self']['href']
                     del g['_links']
                     del g['type']
+                    if g['name'] == 'Fraktsiooni mittekuuluvad Riigikogu liikmed':
+                        g['shortName'] = "MITTEKUULUVAD"
                 fractions_data = pd.DataFrame(party_groups).set_index("uuid")
                 fractions_data["colorHex"] = fractions_data["colorHex"].apply(
                     lambda c: "#" + c.lower() if type(c) == str else c)
@@ -257,15 +325,3 @@ def get_adjacency_matrix_df(votes_df: pd.DataFrame) -> pd.DataFrame:
             processed_names.add(name1)
     adjacency_matrix_df = pd.DataFrame.from_dict(adjacency_matrix)
     return adjacency_matrix_df
-
-
-def progress(value: int, max_progress=100) -> HTML:
-    return HTML("""
-        <progress
-            value='{value}'
-            max='{max}',
-            style='width: 100%'
-        >
-            {value}
-        </progress>
-    """.format(value=value, max=max_progress))

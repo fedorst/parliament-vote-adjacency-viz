@@ -36,7 +36,7 @@ function App() {
         <h2>MP voting behavior comparison</h2> <CoalitionSelect selectedCoalition={selectedCoalition} selectCoalition={selectCoalition}/> <GithubLink/>
         </div>
         <Chart selectedCoalition={selectedCoalition}/>
-        <br/>>
+        <br/>
     </div>
   );
 }

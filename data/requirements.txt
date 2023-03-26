@@ -6,3 +6,4 @@ seaborn
 pyarrow
 fastparquet
 numpy
+sklearn

@@ -101,7 +101,7 @@ const getBarOption = (id, nodeIdToName, nodeIdToCategory, links) => {
             type: 'category',
             data: relatedLinks.map(l => l.name)
         },
-        xAxis: { type: 'value' },
+        xAxis: { type: 'value', max: 1, min: 0 },
         colorBy: 'data',
         series: [
             {

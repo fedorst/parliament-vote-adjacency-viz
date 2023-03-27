@@ -7,3 +7,4 @@ pyarrow
 fastparquet
 numpy
 sklearn
+node2vec

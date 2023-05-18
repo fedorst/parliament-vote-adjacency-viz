@@ -49,7 +49,7 @@ def generate_json(
 
 
 if __name__ == "__main__":
-    # python generateJson 52 jaccards
+    # python generateJson.py 52 jaccards
     args = sys.argv
     if len(args) >= 2:
         coalitions = json.load(open("coalitionData.json"))

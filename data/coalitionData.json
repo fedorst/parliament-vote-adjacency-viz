@@ -1,6 +1,11 @@
 {
+  "53": {
+    "period": ["2023-04-17", "2023-05-18"],
+    "participantsShort": ["REF", "SDE", "E200"],
+    "name": "Kaja Kallase teine valitsus"
+  },
   "52": {
-    "period": ["2022-07-18", "2023-03-14"],
+    "period": ["2022-07-18", "2023-04-17"],
     "participantsShort": ["REF", "SDE", "I"],
     "name": "Kaja Kallase teine valitsus"
   },

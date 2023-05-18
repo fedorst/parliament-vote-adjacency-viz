@@ -28,5 +28,25 @@
     "period": ["2015-04-09", "2016-11-22"],
     "participantsShort": ["REF", "SDE", "IRL"],
     "name": "Taavi Rõivase teine valitsus"
+  },
+  "XV": {
+    "period": ["2023-04-01", "2023-05-18"],
+    "participantsShort": [],
+    "name": "XV Riigikogu"
+  },
+  "XIV": {
+    "period": ["2019-03-30", "2023-03-31"],
+    "participantsShort": [],
+    "name": "XIV Riigikogu"
+  },
+  "XIII": {
+    "period": ["2015-03-24", "2019-03-29"],
+    "participantsShort": [],
+    "name": "XIII Riigikogu"
+  },
+  "XII": {
+    "period": ["2011-03-27", "2015-03-23"],
+    "participantsShort": [],
+    "name": "XII Riigikogu"
   }
 }

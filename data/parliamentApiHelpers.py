@@ -76,9 +76,8 @@ def get_payload(url, verbose=False):
 
 
 class ParliamentAPI:
-    coalitions = json.load(open("coalitionData.json"))
-
-    def __init__(self):
+    def __init__(self, coalition_data_path="coalitionData.json"):
+        self.coalitions = json.load(open(coalition_data_path))
         self.session_data = {}
         self.coalition_votes_data = {}
         self.coalition_votes_metadata = {}
@@ -119,7 +118,7 @@ class ParliamentAPI:
                 print(f"Session data already exists in {session_path}")
                 session_data = pd.read_parquet(session_path)
             else:
-                start_date, end_date = ParliamentAPI.coalitions[coalition]["period"]
+                start_date, end_date = self.coalitions[coalition]["period"]
                 session_json = ParliamentAPI.get_session_json(start_date, end_date)
                 session_data = ParliamentAPI.transform_session_json(session_json)
                 print(f"Saving session data to {session_path}")
@@ -279,17 +278,16 @@ class ParliamentAPI:
 
         return 0
 
-    def get_adjacency_matrix_df(self, coalition, metric="jaccards",
-                                included_vote_values=["POOLT", "VASTU", "ERAPOOLETU"]) -> pd.DataFrame:
-        votes_df, _, _ = self.get_coalition_votes(coalition)
-        votes_df_used = votes_df.copy()
-        mask = votes_df_used.isin(included_vote_values)
-        votes_df_used[~mask] = np.nan
+    @staticmethod
+    def generate_adjacency_matrix(df_votes, metric, included_vote_values) -> pd.DataFrame:
+        df_votes_used = df_votes.copy()
+        mask = df_votes_used.isin(included_vote_values)
+        df_votes_used[~mask] = np.nan
         processed_names = set()
         adjacency_matrix = {}
-        for name1 in votes_df.columns:
+        for name1 in df_votes.columns:
             adjacency_matrix[name1] = {}
-            for name2 in votes_df.columns:
+            for name2 in df_votes.columns:
                 # if name2 == name1:
                 #  continue
                 if name2 not in adjacency_matrix:
@@ -297,31 +295,14 @@ class ParliamentAPI:
                 if name2 in adjacency_matrix[name1]:
                     adjacency_matrix[name2][name1] = adjacency_matrix[name1][name2]
                 else:
-                    adjacency_value = ParliamentAPI.calculate_adjacency_value(votes_df_used[name1],
-                                                                              votes_df_used[name2], metric)
+                    adjacency_value = ParliamentAPI.calculate_adjacency_value(df_votes_used[name1],
+                                                                              df_votes_used[name2], metric)
                     adjacency_matrix[name1][name2] = adjacency_value
                 processed_names.add(name1)
         adjacency_matrix_df = pd.DataFrame.from_dict(adjacency_matrix)
         return adjacency_matrix_df
 
-
-def get_adjacency_matrix_df(votes_df: pd.DataFrame) -> pd.DataFrame:
-    processed_names = set()
-    adjacency_matrix = {}
-    for name1 in votes_df.columns:
-        adjacency_matrix[name1] = {}
-        for name2 in votes_df.columns:
-            # if name2 == name1:
-            #  continue
-            if name2 not in adjacency_matrix:
-                adjacency_matrix[name2] = {}
-            if name2 in adjacency_matrix[name1]:
-                adjacency_matrix[name2][name1] = adjacency_matrix[name1][name2]
-            else:
-                adjacency = (votes_df[name1] == votes_df[name2]).dropna()
-                adjacency_sum = adjacency.sum()
-                adjacency_matrix[name1][name2] = adjacency_sum
-                # print(name1, name2, adjacency.mean())
-            processed_names.add(name1)
-    adjacency_matrix_df = pd.DataFrame.from_dict(adjacency_matrix)
-    return adjacency_matrix_df
+    def get_adjacency_matrix_df(self, coalition, metric="jaccards",
+                                included_vote_values=["POOLT", "VASTU", "ERAPOOLETU"]) -> pd.DataFrame:
+        votes_df, _, _ = self.get_coalition_votes(coalition)
+        return ParliamentAPI.generate_adjacency_matrix(votes_df, metric, included_vote_values)

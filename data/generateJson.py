@@ -2,7 +2,7 @@ import sys
 import json
 import numpy as np
 import pandas as pd
-from parliamentApiHelpers import ParliamentAPI
+from .parliamentApiHelpers import ParliamentAPI
 
 
 def get_links(adjacency_matrix: pd.DataFrame) -> pd.DataFrame:

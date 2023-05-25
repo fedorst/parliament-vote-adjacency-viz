@@ -1,8 +1,8 @@
 ## Project for the Network Science course at the University of Tartu
 
 Files relevant for the project are found in the folder `data`.  
-Folder "experiments" contains Jupyter notebooks which were used as analysis for the project.  
-The parliament voting data used in the project is in the file `coalitionData.json` and all of "Hääleandja" (opinion survey) data is located in the folder `data/haaleandja`.
+Folder `experiments` contains Jupyter analysis notebooks which were used in the project.  
+The parliament voting data used in the project is defined in the file `coalitionData.json` and stored in `data/coalition_\[n\]` and all of "Hääleandja" (opinion survey) data is located in the folder `data/haaleandja`.
 
 
 ## Estonian parliament voting similarity visualization

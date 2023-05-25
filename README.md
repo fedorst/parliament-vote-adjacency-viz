@@ -2,7 +2,7 @@
 
 Files relevant for the project are found in the folder `data`.  
 Folder "experiments" contains Jupyter notebooks which were used as analysis for the project.  
-The data sets used in the project are `coalitionData.json` and all of "Hääleandja" data is located in the folder `haaleandja`.
+The parliament voting data used in the project is in the file `coalitionData.json` and all of "Hääleandja" (opinion survey) data is located in the folder `data/haaleandja`.
 
 
 ## Estonian parliament voting similarity visualization
